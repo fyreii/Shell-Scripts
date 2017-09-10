@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# File name: lab5.2
+# Author: Teresa Henderson
+# Term: Summer 2017
+# Date: 07/30/2017
+
+# This isn't production, and I am not the world's most interesting coder.
+
+# I will acknowledge that the cat/tail line parse method I used is limited
+# because you have to know what line segments you want to grab.  If it were more
+# dynamic, I'd match fields with grep, extrapolate the line numbers and then parse them out
+
+
+# Echo the only static field in the whole output
+echo "Performance Data"
+
+# create an array to hold the table headers - the underscore is because it kept splitting
+# that field on the newline and I didn't want to bother with it
+headers=("Curve_Name" "Date" "Time" "Tamb" "TRef" "Tm(C)" "Irradiance" "Isc(A)" "Voc(V)" "Imp(A)" "Vmp(V)" "Pm(W)" "FF(%)")
+
+# Code re-use from lab4.3, with the additional fields for this table added
+# and an extra loop for the files themselves
+index=("F" "D" "T" "B" "P" "Q" "R" "H" "O" "C" "K" "W" "L")
+
+# for each file ending with *.iva
+for f in `ls *.iva`
+do
+  # read in lines
+  cat $f | while read line
+  do
+    # a match for the index means we want it, the index is first col of input
+    match=(`echo $line | cut -d' ' -f1`)
+    # loop through the index per line and look for a match
+    for i in ${index[@]}
+    do
+      # when a match is found, append it to "file1"
+      if [[ "$match" == "${i}" ]] ; then
+       echo $line >> file1
+      fi
+    done
+  done
+done
+
+# read in headers from array
+# default printing is a column which is what we want
+for h in ${headers[@]}
+do
+  echo $h >> headers
+done
+
+# This portion has many solutions - the cat/tail method seemed to be the fastest
+# the letters are arbitrary line numbers for cat and tail
+
+# file1 from our matching above contains 40 lines
+# file2 contains the first 13 lines, starting from line 13 and counting up to 1
+a=1
+b=13
+# file2 contains the next set of 13 lines, starting from line 26 and counting up to 14
+c=14
+d=26
+# file3 contains the final set of lines, starting from line 40 and counting up to 27
+e=27
+f=40
+
+# the calculation is head going to the lowest number in the set
+# then being piped through tail which forces the lines to be counted
+# backward from the desired ending line
+
+# awk prints the 2nd column only (the numbers) because we don't
+# need the index anymore
+cat file1 | head -n "$b" | tail -n +"$a" | awk '{print $2}' > file2
+cat file1 | head -n "$d" | tail -n +"$c" | awk '{print $2}' > file3
+cat file1 | head -n "$f" | tail -n +"$e" | awk '{print $2}' > file4
+
+# Yes, this is complete cheese.  At this point, I have no patience doing it by hand
+
+# Unix pr command formats text files for printing and produces nice
+# neat columns - the pr command is a merge of all files, minus the default
+# headers it puts on top (page number, etc)
+pr -m -t headers file2 file3 file4
+
+# Cleanup removes all temp files we created to get the output
+rm file* headers

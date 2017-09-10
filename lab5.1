@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# File name: lab5.1
+# Author: Teresa Henderson
+# Term: Summer 2017
+# Date: 07/26/2017
+
+cwd=`pwd`
+outfile="lab5.1.out"
+
+echo "Commands:" > $cwd/$outfile
+cd /bin; ls ?? >>  $cwd/$outfile
+echo "Command count:" >> $cwd/$outfile
+ls ?? | wc | awk '{print $1}' >> $cwd/$outfile
+echo "Output file is: $outfile"
